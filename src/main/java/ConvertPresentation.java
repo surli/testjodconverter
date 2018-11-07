@@ -19,25 +19,29 @@
  */
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
-import org.jodconverter.LocalConverter;
-import org.jodconverter.office.LocalOfficeManager;
-import org.jodconverter.office.OfficeException;
+import org.artofsolving.jodconverter.OfficeDocumentConverter;
+import org.artofsolving.jodconverter.document.JsonDocumentFormatRegistry;
+import org.artofsolving.jodconverter.office.DefaultOfficeManagerConfiguration;
+import org.artofsolving.jodconverter.office.OfficeException;
+import org.artofsolving.jodconverter.office.OfficeManager;
 
 public class ConvertPresentation
 {
-    public static void main(String[] args) throws OfficeException
+    public static void main(String[] args) throws OfficeException, IOException
     {
         File inputFile = new File("src/main/resources/Test.ppt");
         File outputFile = new File("/tmp/jodtest/test.html");
+        InputStream docFormatInput = ConvertPresentation.class.getResourceAsStream("/document-formats.js");
 
-        LocalOfficeManager.Builder configuration = LocalOfficeManager.builder();
-        LocalOfficeManager officeManager = configuration.build();
+        DefaultOfficeManagerConfiguration configuration = new DefaultOfficeManagerConfiguration();
+        OfficeManager officeManager = configuration.buildOfficeManager();
         officeManager.start();
-        LocalConverter localConverter = LocalConverter.builder().officeManager(officeManager).build();
-        localConverter.convert(inputFile)
-            .to(outputFile)
-            .execute();
+        OfficeDocumentConverter officeDocumentConverter = new OfficeDocumentConverter(officeManager
+            , new JsonDocumentFormatRegistry(docFormatInput));
+        officeDocumentConverter.convert(inputFile, outputFile);
         officeManager.stop();
     }
 }

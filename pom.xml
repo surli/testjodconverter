@@ -10,9 +10,14 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.jodconverter</groupId>
-      <artifactId>jodconverter-local</artifactId>
-      <version>4.2.1</version>
+      <groupId>org.artofsolving.jodconverter</groupId>
+      <artifactId>jodconverter-core</artifactId>
+      <version>3.1-xwiki</version>
+    </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20180813</version>
     </dependency>
   </dependencies>
 </project>
