@@ -19,22 +19,30 @@
  */
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 import org.jodconverter.LocalConverter;
+import org.jodconverter.document.JsonDocumentFormatRegistry;
 import org.jodconverter.office.LocalOfficeManager;
 import org.jodconverter.office.OfficeException;
 
-public class ConvertPresentation
+public class TestConvert
 {
-    public static void main(String[] args) throws OfficeException
+    public static void main(String[] args) throws OfficeException, IOException
     {
-        File inputFile = new File("src/main/resources/Test.ppt");
-        File outputFile = new File("/tmp/jodtest/test.html");
+        File inputFile = new File("src/main/resources/html/export_input.html");
+        File outputFile = new File("/tmp/jodtest/test.odt");
+        InputStream docFormatInput = TestConvert.class.getResourceAsStream("/document-formats.js");
 
         LocalOfficeManager.Builder configuration = LocalOfficeManager.builder();
         LocalOfficeManager officeManager = configuration.build();
         officeManager.start();
-        LocalConverter localConverter = LocalConverter.builder().officeManager(officeManager).build();
+        LocalConverter localConverter = LocalConverter.builder()
+            .officeManager(officeManager)
+            .formatRegistry(JsonDocumentFormatRegistry.create(docFormatInput))
+            .filterChain(new ImageEmbedderFilter())
+            .build();
         localConverter.convert(inputFile)
             .to(outputFile)
             .execute();
