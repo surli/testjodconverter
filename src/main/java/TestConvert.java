@@ -20,28 +20,23 @@
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.jodconverter.LocalConverter;
-import org.jodconverter.document.JsonDocumentFormatRegistry;
 import org.jodconverter.office.LocalOfficeManager;
 import org.jodconverter.office.OfficeException;
 
 public class TestConvert
 {
-    public static void main(String[] args) throws OfficeException, IOException
+    public static void main(String[] args) throws OfficeException
     {
-        File inputFile = new File("src/main/resources/html/export_input.html");
-        File outputFile = new File("/tmp/jodtest/test.odt");
-        InputStream docFormatInput = TestConvert.class.getResourceAsStream("/document-formats.js");
+        File inputFile = new File("src/main/resources/odt/test.odt");
+        File outputFile = new File("/tmp/jodtest/accenté_+.html");
 
-        LocalOfficeManager.Builder configuration = LocalOfficeManager.builder();
-        LocalOfficeManager officeManager = configuration.build();
+        LocalOfficeManager.Builder config = LocalOfficeManager.builder();
+        LocalOfficeManager officeManager = config.build();
         officeManager.start();
         LocalConverter localConverter = LocalConverter.builder()
             .officeManager(officeManager)
-            .formatRegistry(JsonDocumentFormatRegistry.create(docFormatInput))
-            .filterChain(new ImageEmbedderFilter())
             .build();
         localConverter.convert(inputFile)
             .to(outputFile)
