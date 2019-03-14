@@ -19,29 +19,40 @@
  */
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileInputStream;
 import java.io.InputStream;
 
 import org.artofsolving.jodconverter.OfficeDocumentConverter;
 import org.artofsolving.jodconverter.document.JsonDocumentFormatRegistry;
 import org.artofsolving.jodconverter.office.DefaultOfficeManagerConfiguration;
-import org.artofsolving.jodconverter.office.OfficeException;
 import org.artofsolving.jodconverter.office.OfficeManager;
 
 public class ConvertPresentation
 {
-    public static void main(String[] args) throws OfficeException, IOException
+    public static void main(String[] args) throws Exception
     {
-        File inputFile = new File("src/main/resources/Test.ppt");
-        File outputFile = new File("/tmp/jodtest/test.html");
-        InputStream docFormatInput = ConvertPresentation.class.getResourceAsStream("/document-formats.js");
+        File inputFile = new File("/tmp/jodtest/input/export_input.html");
+        File outputFile = new File("/tmp/jodtest/output/export_output.odt");
+        InputStream docFormatInput = new FileInputStream(new File("/tmp/jodtest/document-formats.js"));
 
         DefaultOfficeManagerConfiguration configuration = new DefaultOfficeManagerConfiguration();
-        OfficeManager officeManager = configuration.buildOfficeManager();
+        OfficeManager officeManager = configuration.setOfficeHome(new File(args[0])).buildOfficeManager();
+
+        System.out.println("Starting office server...");
         officeManager.start();
-        OfficeDocumentConverter officeDocumentConverter = new OfficeDocumentConverter(officeManager
-            , new JsonDocumentFormatRegistry(docFormatInput));
-        officeDocumentConverter.convert(inputFile, outputFile);
-        officeManager.stop();
+        System.out.println("Server started.");
+
+        try {
+            OfficeDocumentConverter officeDocumentConverter = new OfficeDocumentConverter(officeManager
+                , new JsonDocumentFormatRegistry(docFormatInput));
+
+            System.out.println("Starting conversion....");
+            officeDocumentConverter.convert(inputFile, outputFile);
+            System.out.println("Conversion finished.");
+        } finally {
+            System.out.println("Stopping office server...");
+            officeManager.stop();
+            System.out.println("Server stopped.");
+        }
     }
 }
