@@ -19,25 +19,39 @@
  */
 
 import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
 
-import org.jodconverter.LocalConverter;
-import org.jodconverter.office.LocalOfficeManager;
-import org.jodconverter.office.OfficeException;
+import org.jodconverter.core.document.JsonDocumentFormatRegistry;
+import org.jodconverter.core.office.OfficeException;
+import org.jodconverter.local.LocalConverter;
+import org.jodconverter.local.filter.text.LinkedImagesEmbedderFilter;
+import org.jodconverter.local.office.LocalOfficeManager;
 
 public class TestConvert
 {
     public static void main(String[] args) throws OfficeException
     {
-        File inputFile = new File("src/main/resources/odt/test.odt");
-        File outputFile = new File("/tmp/jodtest/accenté_+.html");
+        File inputFile = new File("src/main/resources/odp/Test.odp");
+        File outputDir = new File("/tmp/jodtest/");
+        File outputFile = new File(outputDir, "img0.html");
 
         LocalOfficeManager.Builder config = LocalOfficeManager.builder();
         LocalOfficeManager officeManager = config.build();
         officeManager.start();
-        LocalConverter localConverter = LocalConverter.builder()
-            .officeManager(officeManager)
-            .build();
+        LocalConverter localConverter = null;
+        try (InputStream input = TestConvert.class.getResourceAsStream("/document-formats.js")) {
+            if (input != null) {
+                localConverter = LocalConverter.builder().officeManager(officeManager)
+                    .formatRegistry(JsonDocumentFormatRegistry.create(input))
+                    .filterChain(new LinkedImagesEmbedderFilter()).build();
+            } else {
+                localConverter = LocalConverter.builder()
+                    .officeManager(officeManager)
+                    .build();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         localConverter.convert(inputFile)
             .to(outputFile)
             .execute();
