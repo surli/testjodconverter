@@ -19,42 +19,44 @@
  */
 
 import java.io.File;
-import java.io.InputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.stream.Stream;
 
-import org.jodconverter.core.document.JsonDocumentFormatRegistry;
 import org.jodconverter.core.office.OfficeException;
 import org.jodconverter.local.LocalConverter;
 import org.jodconverter.local.filter.text.LinkedImagesEmbedderFilter;
 import org.jodconverter.local.office.LocalOfficeManager;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class TestConvert
 {
-    public static void main(String[] args) throws OfficeException
+    @Test
+    public void testConvert() throws OfficeException, IOException
     {
-        File inputFile = new File("src/main/resources/odp/Test.odp");
+        File inputFile = new File("src/test/resources/ppt/Test.ppt");
         File outputDir = new File("/tmp/jodtest/");
         File outputFile = new File(outputDir, "img0.html");
 
         LocalOfficeManager.Builder config = LocalOfficeManager.builder();
         LocalOfficeManager officeManager = config.build();
         officeManager.start();
-        LocalConverter localConverter = null;
-        try (InputStream input = TestConvert.class.getResourceAsStream("/document-formats.js")) {
-            if (input != null) {
-                localConverter = LocalConverter.builder().officeManager(officeManager)
-                    .formatRegistry(JsonDocumentFormatRegistry.create(input))
-                    .filterChain(new LinkedImagesEmbedderFilter()).build();
-            } else {
-                localConverter = LocalConverter.builder()
-                    .officeManager(officeManager)
-                    .build();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        LocalConverter localConverter = LocalConverter.builder()
+            .officeManager(officeManager)
+            .filterChain(new LinkedImagesEmbedderFilter())
+            .build();
+
         localConverter.convert(inputFile)
             .to(outputFile)
             .execute();
         officeManager.stop();
+
+        Stream<Path> pathList = Files.list(Path.of("/tmp/jodtest/"));
+        Optional<Path> first = pathList.filter(path -> path.toString().contains(".jpg")).findFirst();
+        assertFalse(first.isEmpty());
     }
 }
